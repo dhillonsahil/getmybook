@@ -19,7 +19,7 @@ const handler = async(req,res) =>{
 
     let order= new Order({
         email :req.body.email,
-        orderId:req.body.oid,
+        orderId:req.body.order_id,
         address:req.body.address,
         amount :req.body.subTotal,
         products:req.body.cart

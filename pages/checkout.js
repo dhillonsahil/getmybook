@@ -13,6 +13,7 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [disabled, setDisabled] = useState(true);
+  const [payObj, setPayObj] = useState({})
 
   const handleChange = (e) => {
     if (e.target.name === 'name') {
@@ -47,22 +48,22 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
     }
   };
 
-  const loadScript = async() =>{
-    return new Promise((resolve)=>{
-      const script = document.createElement('script')
-      script.src='https://checkout.razorpay.com/v1/checkout.js'
+  // const loadScript = async() =>{
+  //   return new Promise((resolve)=>{
+  //     const script = document.createElement('script')
+  //     script.src='https://checkout.razorpay.com/v1/checkout.js'
 
-      script.onload = () =>{
-        resolve(true)
-      }
+  //     script.onload = () =>{
+  //       resolve(true)
+  //     }
 
-      script.onerror = () =>{
-        resolve(false)
-      }
-      
-      document.body.appendChild(script)
-    })
-  }
+  //     script.onerror = () =>{
+  //       resolve(false)
+  //     }
+
+  //     document.body.appendChild(script)
+  //   })
+  // }
   const handlePayment = async () => {
     try {
       // const as = await loadScript()
@@ -85,6 +86,15 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
       if (response.ok) {
         const orderData = await response.json();
         const { order_id } = orderData;
+        const data ={email,order_id,address,subTotal,cart}
+
+        // save order in db
+        let saveOrder = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/pretransaction`,{
+          method:"POST",
+          headers:{
+            'Content-type':"application/json"
+          },body:JSON.stringify(data)
+        })
 
         // Initialize Razorpay with the order ID received from the server
         const rzpOptions = {
@@ -102,7 +112,7 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
           },
           handler: function (response) {
             // Payment success handling
-            console.log(response)
+            setPayObj(response)
             console.log('Payment successful:', response);
           },
           notes: {},
@@ -192,7 +202,7 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
       </div>
       <h2 className='text-xl font-semibold mb-3'>2. Review cart Items and Pay</h2>
       <div className='sidecart  bg-pink-100 p-6 my-2'>
-      <ol className='list-decimal font-semibold'>
+        <ol className='list-decimal font-semibold'>
           {Object.keys(cart).length === 0 && <div className='my-4 font-normal text-base'>Your Cart is Empyty! </div>}
           {Object.keys(cart).map((k) => {
             const { qty, price, name, itemcode } = cart[k];
