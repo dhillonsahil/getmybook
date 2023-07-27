@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AiFillMinusCircle, AiFillPlusCircle } from 'react-icons/ai';
 import { BsFillBagCheckFill } from 'react-icons/bs';
 import Head from 'next/head';
+import Script from 'next/script';
 
 export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) {
   const [name, setName] = useState('');
@@ -46,8 +47,25 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
     }
   };
 
+  const loadScript = async() =>{
+    return new Promise((resolve)=>{
+      const script = document.createElement('script')
+      script.src='https://checkout.razorpay.com/v1/checkout.js'
+
+      script.onload = () =>{
+        resolve(true)
+      }
+
+      script.onerror = () =>{
+        resolve(false)
+      }
+      
+      document.body.appendChild(script)
+    })
+  }
   const handlePayment = async () => {
     try {
+      // const as = await loadScript()
       const response = await fetch('/api/createOrder', {
         method: 'POST',
         headers: {
@@ -84,6 +102,7 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
           },
           handler: function (response) {
             // Payment success handling
+            console.log(response)
             console.log('Payment successful:', response);
           },
           notes: {},
@@ -113,6 +132,7 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
           content='width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0'
         />
       </Head>
+      <Script src={'https://checkout.razorpay.com/v1/checkout.js'} />
       <h1 className='font-bold text-3xl my-8 text-center'>Checkout</h1>
       <h2 className='text-xl font-semibold mb-3'>1. Delivery Details</h2>
       <div className="max-auto flex">
