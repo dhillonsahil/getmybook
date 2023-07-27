@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const OrderSchema = new Schema({
-    userId:{type:String , required:true},
+    email:{type:String , required:true},
+    orderId : {type:String , required:true},
+    paymentInfo : {type:String , default: ''},
     products:[{
             productID: {type:String},
             quantity : {type:Number , default :1}
