@@ -3,6 +3,7 @@ import { AiFillMinusCircle, AiFillPlusCircle } from 'react-icons/ai';
 import { BsFillBagCheckFill } from 'react-icons/bs';
 import Head from 'next/head';
 import Script from 'next/script';
+import crypto from 'crypto'
 
 export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) {
   const [name, setName] = useState('');
@@ -86,14 +87,14 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
       if (response.ok) {
         const orderData = await response.json();
         const { order_id } = orderData;
-        const data ={email,order_id,address,subTotal,cart}
+        const data = { email, order_id, address, subTotal, cart }
 
         // save order in db
-        let saveOrder = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/pretransaction`,{
-          method:"POST",
-          headers:{
-            'Content-type':"application/json"
-          },body:JSON.stringify(data)
+        let saveOrder = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/pretransaction`, {
+          method: "POST",
+          headers: {
+            'Content-type': "application/json"
+          }, body: JSON.stringify(data)
         })
 
         // Initialize Razorpay with the order ID received from the server
@@ -114,6 +115,7 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
             // Payment success handling
             setPayObj(response)
             console.log('Payment successful:', response);
+            checkSignature()
           },
           notes: {},
           theme: {
@@ -134,6 +136,23 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
     }
   };
 
+
+  // Check Signature is payment really success - [if  both are same we will redirect to order page and update payment as success]
+  const checkSignature = async() => {
+    const {razorpay_order_id,razorpay_payment_id,razorpay_signature}=payObj
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id
+   
+    const expectedSign = crypto.createHmac('sha256','KfmAKyT7RCFo4XEvQ1gd3YTI').update(body.toString()).digest('hex');
+    console.log("sig received" , razorpay_signature)
+    console.log("sig generated" , expectedSign)
+    // var response= {"signatureIsValid":"false"}
+    // if(expectedSign===razorpay_signature){
+    //   response={"signatureIsValid":"true"}
+    // }
+
+    // console.log("Signature valid",response.signatureIsValid)
+  }
   return (
     <div className='container px-6 sm:m-auto'>
       <Head>
