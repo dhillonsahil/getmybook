@@ -1,130 +1,117 @@
-import React , {useState} from 'react'
-import { AiFillMinusCircle, AiFillPlusCircle } from 'react-icons/ai'
-import { BsFillBagCheckFill } from 'react-icons/bs'
-import Head from 'next/head'
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState } from 'react';
+import { AiFillMinusCircle, AiFillPlusCircle } from 'react-icons/ai';
+import { BsFillBagCheckFill } from 'react-icons/bs';
+import Head from 'next/head';
 
 export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [state, setState] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [disabled, setDisabled] = useState(true);
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [pincode, setPincode] = useState('')
-  const [state, setState] = useState('')
-  const [address, setAddress] = useState('')
-  const [city,setCity]=useState('')
-  const oid =  uuidv4();;
-
-  const [disabled,setDisabled]=useState(true)
-
-  const handleChange = (e) =>{
-    if(e.target.name=='name'){
-      setName(e.target.value)
-    }else if(e.target.name=='email'){
-      setEmail(e.target.value)
-    }else if(e.target.name=='address'){
-      setAddress(e.target.value)
-    }else if(e.target.name=='pincode'){
-      setPincode(e.target.value)
-    }else if(e.target.name=='phone'){
-      setPhone(e.target.value)
-    }else if(e.target.name=='state'){
-      setState(e.target.value)
-    }else if(e.target.name=='city'){
-      setCity(e.target.value)
+  const handleChange = (e) => {
+    if (e.target.name === 'name') {
+      setName(e.target.value);
+    } else if (e.target.name === 'email') {
+      setEmail(e.target.value);
+    } else if (e.target.name === 'address') {
+      setAddress(e.target.value);
+    } else if (e.target.name === 'pincode') {
+      setPincode(e.target.value);
+    } else if (e.target.name === 'phone') {
+      setPhone(e.target.value);
+    } else if (e.target.name === 'state') {
+      setState(e.target.value);
+    } else if (e.target.name === 'city') {
+      setCity(e.target.value);
     }
 
     // enable pay
-    if(name&& email && phone.length==10 && pincode.length==6 && city && state && address){
-      setDisabled(false)
-    }else{
-      setDisabled(true)
+    if (
+      name &&
+      email &&
+      phone.length === 10 &&
+      pincode.length === 6 &&
+      city &&
+      state &&
+      address
+    ) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
     }
-  }
+  };
 
+  const handlePayment = async () => {
+    try {
+      const response = await fetch('/api/createOrder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cart,
+          subTotal,
+          email,
+          address,
+          name,
+          pincode,
+          phone,
+        }),
+      });
 
-  const passData = {cart,subTotal,oid,email,address,name,pincode,phone}
-  const createOrder = async () =>{
-    const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/pretransaction`,{
-      method:"POST",
-      headers:{
-        'Content-type':'application/json'
-      },
-      body: JSON.stringify(passData)
-    })
-    let response= await res.json()
-    console.log(response)
-  }
+      if (response.ok) {
+        const orderData = await response.json();
+        const { order_id } = orderData;
 
-  // razor pay
-  const loadScript = (url) => {
-    // insert oder as pending in database
-    
-    return new Promise((resolve) => {
-      // intitiatre an order corresponding to this order id
+        // Initialize Razorpay with the order ID received from the server
+        const rzpOptions = {
+          key: 'rzp_test_bPJZziSuHLY9L5',
+          amount: subTotal * 100, // Amount in paise (multiply by 100)
+          currency: 'INR',
+          name: 'Get My Book',
+          description: 'Product Description',
+          image: './logo.png',
+          order_id: order_id,
+          prefill: {
+            name: name,
+            email: email,
+            contact: phone,
+          },
+          handler: function (response) {
+            // Payment success handling
+            console.log('Payment successful:', response);
+          },
+          notes: {},
+          theme: {
+            color: '#F37254',
+          },
+        };
 
-      // load script
-      const script = document.createElement('script')
-      script.src = url
+        // Create Razorpay instance
+        const rzp = new window.Razorpay(rzpOptions);
 
-      script.onload = () => {
-        resolve(true)
+        // Open the Razorpay payment modal
+        rzp.open();
+      } else {
+        console.error('Failed to create order');
       }
-
-      script.onerror = () => {
-        resolve(false)
-      }
-
-      document.body.appendChild(script)
-    })
-  }
-
-
-
-  const displayRazorpay = async (amount) => {
-    await createOrder()
-    const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
-
-    if (!res) {
-      alert('You are offline... Failed to load');
-      return;
+    } catch (error) {
+      console.error('Error creating order:', error);
     }
-
-    const options = {
-      key: 'rzp_test_bPJZziSuHLY9L5', // Replace with your Razorpay Key ID
-      amount: amount * 100, // Razorpay amount is in paise, so convert the amount to paise by multiplying with 100
-      currency: 'INR', // Change the currency as needed
-      name: 'Get My Book',
-      description: `${oid}`,
-      image: './logo.png', // Add a URL to your logo
-      handler: function (response) {
-      
-        // handle response
-        // const b = await fetch(`${process.env.NEXT_PUBLIC_HOST}`)
-        console.log('Payment successful:', response);
-      },
-      prefill: {
-        name: name,
-        email: email,
-        contact: phone,
-        // Add pre-filled customer details if needed
-      },
-      notes: {
-        // Add optional notes for your reference or additional data you want to collect
-      },
-      theme: {
-        color: '#F37254', // Customize the theme color
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
   };
 
   return (
     <div className='container px-6 sm:m-auto'>
       <Head>
-        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0" />
+        <meta
+          name='viewport'
+          content='width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0'
+        />
       </Head>
       <h1 className='font-bold text-3xl my-8 text-center'>Checkout</h1>
       <h2 className='text-xl font-semibold mb-3'>1. Delivery Details</h2>
@@ -183,11 +170,9 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
         </div>
 
       </div>
-
       <h2 className='text-xl font-semibold mb-3'>2. Review cart Items and Pay</h2>
-      <div className="sidecart  bg-pink-100 p-6 my-2">
-
-        <ol className='list-decimal font-semibold'>
+      <div className='sidecart  bg-pink-100 p-6 my-2'>
+      <ol className='list-decimal font-semibold'>
           {Object.keys(cart).length === 0 && <div className='my-4 font-normal text-base'>Your Cart is Empyty! </div>}
           {Object.keys(cart).map((k) => {
             const { qty, price, name, itemcode } = cart[k];
@@ -202,19 +187,18 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
 
 
         </ol>
-        <span className="total font-bold">SubTotal :₹{subTotal}</span>
-        <div className="mx-4"> 
-        <button disabled={disabled}
-          id="razorpay-payment-button"
-          onClick={() => displayRazorpay(subTotal)}
-          className="flex items-center mr-2 disabled:bg-pink-200 text-white bg-pink-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-        >
-          <BsFillBagCheckFill className="m-1" /> Pay ₹
-        </button>
-
+        <span className='total font-bold'>SubTotal :₹{subTotal}</span>
+        <div className='mx-4'>
+          <button
+            disabled={disabled}
+            id='razorpay-payment-button'
+            onClick={handlePayment}
+            className='flex items-center mr-2 disabled:bg-pink-200 text-white bg-pink-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded text-lg'
+          >
+            <BsFillBagCheckFill className='m-1' /> Pay ₹
+          </button>
         </div>
       </div>
-
     </div>
-  )
+  );
 }

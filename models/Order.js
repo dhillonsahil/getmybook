@@ -5,10 +5,7 @@ const OrderSchema = new Schema({
     email:{type:String , required:true},
     orderId : {type:String , required:true},
     paymentInfo : {type:String , default: ''},
-    products:[{
-            productID: {type:String},
-            quantity : {type:Number , default :1}
-    }],
+    products:{type :Object , required:true},
     address:{
         type : String,
         required:true
