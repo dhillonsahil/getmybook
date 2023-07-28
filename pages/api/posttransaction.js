@@ -1,8 +1,16 @@
-export default function handler(req, res) {
+import Order from "@/models/Order"
+import connectDb from "@/middleware/mongoose"
 
+const handler = async (req, res) => {
+  const { paymentInfo} = req.body;
+  console.log(req.body.paymentInfo , " order id :- ",paymentInfo.razorpay_order_id)
   // update  into orders table after checking update status
-  // initiate transaction
+  // let order= await Order.findOneAndUpdate{{orderId:req.body.razorpay_order_id}}
+  let order = await Order.findOneAndUpdate({ orderId: paymentInfo.razorpay_order_id }, { status: "PAID", paymentInfo: paymentInfo.razorpay_payment_id })
+  await order.save()
+  // initiate shipping
   // reditect to order confirmation page
-    res.status(200).json({body:req.body})
-  }
-  
+  res.status(200).json({ body: req.body })
+}
+
+export default connectDb(handler)

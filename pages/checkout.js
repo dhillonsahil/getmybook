@@ -14,7 +14,7 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [disabled, setDisabled] = useState(true);
-  const [payObj, setPayObj] = useState({})
+  // const [payObj, setPayObj] = useState({})
 
   const handleChange = (e) => {
     if (e.target.name === 'name') {
@@ -111,11 +111,10 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
             email: email,
             contact: phone,
           },
-          handler: function (response) {
+          handler: async function (response) {
             // Payment success handling
-            setPayObj(response)
-            console.log('Payment successful:', response);
-            checkSignature()
+            console.log('Payment successful:', response );
+            await checkSignature(response)
           },
           notes: {},
           theme: {
@@ -126,6 +125,10 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
         // Create Razorpay instance
         const rzp = new window.Razorpay(rzpOptions);
 
+        // handle payment failure
+        rzp.on('payment.failed', function (response){
+          // sent to post api update payment failed
+      })
         // Open the Razorpay payment modal
         rzp.open();
       } else {
@@ -138,20 +141,33 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
 
 
   // Check Signature is payment really success - [if  both are same we will redirect to order page and update payment as success]
-  const checkSignature = async() => {
+  const checkSignature = async(payObj) => {
     const {razorpay_order_id,razorpay_payment_id,razorpay_signature}=payObj
 
     const body = razorpay_order_id + "|" + razorpay_payment_id
    
-    const expectedSign = crypto.createHmac('sha256','KfmAKyT7RCFo4XEvQ1gd3YTI').update(body.toString()).digest('hex');
+    const expectedSign = await crypto.createHmac('sha256','KfmAKyT7RCFo4XEvQ1gd3YTI').update(body.toString()).digest('hex');
     console.log("sig received" , razorpay_signature)
     console.log("sig generated" , expectedSign)
-    // var response= {"signatureIsValid":"false"}
-    // if(expectedSign===razorpay_signature){
-    //   response={"signatureIsValid":"true"}
-    // }
+    var response= {"signatureIsValid":"false"}
+    if(expectedSign===razorpay_signature){
+      
+      var response= {"signatureIsValid":"true"}
+      // update order status
+      const updateStatus = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/posttransaction`,{
+        method:"POST",
+        headers:{
+          'Content-type':'application/json'
+        },body:JSON.stringify({
+          paymentInfo:payObj,
+          razorpay_order_id:payObj.razorpay_order_id
+        })
+      })
 
-    // console.log("Signature valid",response.signatureIsValid)
+      let a = updateStatus.json()
+    }
+
+    console.log("Signature valid",response.signatureIsValid)
   }
   return (
     <div className='container px-6 sm:m-auto'>
