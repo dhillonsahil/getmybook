@@ -7,6 +7,8 @@ import { IoIosCloseCircle } from 'react-icons/io'
 import {  AiFillMinusCircle, AiFillPlusCircle} from 'react-icons/ai'
 import {BsFillBagCheckFill} from 'react-icons/bs'
 import {MdAccountCircle} from "react-icons/md"
+import 'react-toastify/dist/ReactToastify.css';
+
 
 export default function Navbar({LogOut,user,addToCart,cart,removeFromCart  ,clearCart ,subTotal}) {
 

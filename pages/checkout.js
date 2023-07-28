@@ -4,8 +4,9 @@ import { BsFillBagCheckFill } from 'react-icons/bs';
 import Head from 'next/head';
 import Script from 'next/script';
 import crypto from 'crypto'
+import { useRouter } from 'next/router';
 
-export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) {
+export default function Checkout({ cart,clearCart, addToCart, removeFromCart, subTotal }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -16,6 +17,7 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
   const [disabled, setDisabled] = useState(true);
   // const [payObj, setPayObj] = useState({})
 
+  const router = useRouter()
   const handleChange = (e) => {
     if (e.target.name === 'name') {
       setName(e.target.value);
@@ -49,22 +51,6 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
     }
   };
 
-  // const loadScript = async() =>{
-  //   return new Promise((resolve)=>{
-  //     const script = document.createElement('script')
-  //     script.src='https://checkout.razorpay.com/v1/checkout.js'
-
-  //     script.onload = () =>{
-  //       resolve(true)
-  //     }
-
-  //     script.onerror = () =>{
-  //       resolve(false)
-  //     }
-
-  //     document.body.appendChild(script)
-  //   })
-  // }
   const handlePayment = async () => {
     try {
       // const as = await loadScript()
@@ -147,8 +133,6 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
     const body = razorpay_order_id + "|" + razorpay_payment_id
    
     const expectedSign = await crypto.createHmac('sha256','KfmAKyT7RCFo4XEvQ1gd3YTI').update(body.toString()).digest('hex');
-    console.log("sig received" , razorpay_signature)
-    console.log("sig generated" , expectedSign)
     var response= {"signatureIsValid":"false"}
     if(expectedSign===razorpay_signature){
       
@@ -160,14 +144,16 @@ export default function Checkout({ cart, addToCart, removeFromCart, subTotal }) 
           'Content-type':'application/json'
         },body:JSON.stringify({
           paymentInfo:payObj,
-          razorpay_order_id:payObj.razorpay_order_id
+          razorpay_payment_id:payObj.razorpay_payment_id
         })
       })
 
       let a = updateStatus.json()
+      localStorage.removeItem("cart")
+      clearCart()
+      await router.push('/order')
     }
 
-    console.log("Signature valid",response.signatureIsValid)
   }
   return (
     <div className='container px-6 sm:m-auto'>

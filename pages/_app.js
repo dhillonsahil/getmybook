@@ -6,6 +6,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { ToastContainer, toast } from 'react-toastify'
 import LoadingBar from 'react-top-loading-bar'
+import 'react-toastify/dist/ReactToastify.css';
 
 
 export default function App({ Component, pageProps }) {

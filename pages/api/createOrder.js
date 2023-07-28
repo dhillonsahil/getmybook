@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     res.json({error:"Invalid method"})
   }
 
-  console.log("Hello")
+  
   const { cart, subTotal, email, address, name, pincode, phone } = req.body;
 
   // Initialize Razorpay with your Razorpay Key ID and Secret
@@ -26,7 +26,6 @@ export default async function handler(req, res) {
 
     // Save the order ID in your database or session for later use
     const orderId = order.id;
-    console.log(order)
 
     // Return the order ID to the client
     res.status(200).json({ order_id: orderId });
