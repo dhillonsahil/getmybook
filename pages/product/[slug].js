@@ -15,7 +15,7 @@ export default function Slug({ addToCart, buyNow, product }) {
 
     let pins = await fetch("http://localhost:3000/api/pincode")
     let pinJson = await pins.json()
-    if (pinJson.includes(parseInt(pin))) {
+    if (Object.keys(pinJson).includes(pin)) { 
       setservice(true);
       toast.success('Your Pincode is Serviceable!', {
         position: "bottom-center",
@@ -28,7 +28,7 @@ export default function Slug({ addToCart, buyNow, product }) {
         theme: "light",
         });
     } else {
-      toast.error('Sorry !Pincode not serviceable!', {
+      toast.error('Sorry! Pincode not serviceable!', {
         position: "bottom-center",
         autoClose: 1000,
         hideProgressBar: false,

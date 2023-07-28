@@ -63,7 +63,8 @@ export default function App({ Component, pageProps }) {
     }
     // buy now func
     const buyNow = (itemcode, qty, price, name) => {
-        let newCart = { itemcode: { qty: 1, price, name } };
+        let newCart = {}
+         newCart[itemcode] = { qty: 1, price, name } ;
         setCart(newCart)
         saveCart(newCart)
         router.push("/checkout")

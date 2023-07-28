@@ -5,6 +5,8 @@ import Head from 'next/head';
 import Script from 'next/script';
 import crypto from 'crypto'
 import { useRouter } from 'next/router';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify'
 
 export default function Checkout({ cart,clearCart, addToCart, removeFromCart, subTotal }) {
   const [name, setName] = useState('');
@@ -18,7 +20,7 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
   // const [payObj, setPayObj] = useState({})
 
   const router = useRouter()
-  const handleChange = (e) => {
+  const handleChange = async(e) => {
     if (e.target.name === 'name') {
       setName(e.target.value);
     } else if (e.target.name === 'email') {
@@ -27,6 +29,29 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
       setAddress(e.target.value);
     } else if (e.target.name === 'pincode') {
       setPincode(e.target.value);
+      if(e.target.value.length==6){
+        let a = await fetch(`https://api.postalpincode.in/pincode/${e.target.value}`)
+        let pincodeRes =await a.json() 
+        if(pincodeRes[0].Status=="Success"){
+          setState(pincodeRes[0].PostOffice[0].State)
+          setCity(pincodeRes[0].PostOffice[0].District)
+        }else{
+          toast.error('Incorrect Pincode', {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
+        }
+        
+      }else{
+        setState('')
+        setCity('')
+      }
     } else if (e.target.name === 'phone') {
       setPhone(e.target.value);
     } else if (e.target.name === 'state') {
@@ -35,6 +60,8 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
       setCity(e.target.value);
     }
 
+    // check pincode length
+    
     // enable pay
     if (
       name &&
@@ -112,8 +139,20 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
         const rzp = new window.Razorpay(rzpOptions);
 
         // handle payment failure
-        rzp.on('payment.failed', function (response){
+        rzp.on('payment.failed', async function (response){
           // sent to post api update payment failed
+          const updateStatus = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/failedtransaction`,{
+            method:"POST",
+            headers:{
+              'Content-type':'application/json'
+            },body:JSON.stringify({
+              razorpay_order_id:order_id
+            })
+          })
+    
+          let a = await updateStatus.json()
+          
+
       })
         // Open the Razorpay payment modal
         rzp.open();
@@ -136,7 +175,6 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
     var response= {"signatureIsValid":"false"}
     if(expectedSign===razorpay_signature){
       
-      var response= {"signatureIsValid":"true"}
       // update order status
       const updateStatus = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/posttransaction`,{
         method:"POST",
@@ -149,14 +187,25 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
       })
 
       let a = updateStatus.json()
-      localStorage.removeItem("cart")
       clearCart()
-      await router.push('/order')
+      await router.push(`/order?orderId=${payObj.razorpay_order_id}`)
     }
 
   }
   return (
     <div className='container px-6 sm:m-auto'>
+       <ToastContainer
+            position="top-center"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+        />
       <Head>
         <meta
           name='viewport'
@@ -216,7 +265,7 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
         <div className="px-2 w-1/2">
           <div className={"mb-2"}>
             <label htmlFor="city" className="leading-7 text-sm text-gray-600">State</label>
-            <input onChange={handleChange} type="text" id="state" name="state" className="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
+            <input onChange={handleChange} value={state} type="text" id="state" name="state" className="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
           </div>
         </div>
 

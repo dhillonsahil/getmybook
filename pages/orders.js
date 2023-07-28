@@ -1,18 +1,32 @@
-import React,{useEffect} from 'react'
-import mongoose from 'mongoose';
-import Order from '@/models/Order';
+import React,{useEffect,useState} from 'react'
 import { useRouter } from 'next/router';
+import Link from 'next/link';
+
 export default function Orders() {
     //  If not logged in signout
+    const [orders, setOrders] = useState([])
     const router = useRouter()
 
-    useEffect(()=>{
+    useEffect( ()=>{
         if(!localStorage.getItem("token")){
             router.push('/login')
         }
+        const fetchOrders = async ()=>{
+            let a = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/myorders`,{
+                method:"POST",
+                headers:{
+                    'Content-type':'application/json'
+                },body:JSON.stringify({token:localStorage.getItem('token')})
+            })
+           
+            let res = await a.json()
+            setOrders(res.orders)
+        }
+
+        fetchOrders()
     },[])
   return (
-    <div className='container mx-auto'>
+    <div className='container px-2 mx-auto min-h-screen'>
       <h1 className="font-bold  text-center text-xl my-4">My Orders</h1>
       
 <div className="relative overflow-x-auto shadow-md sm:rounded-lg table-auto">
@@ -23,64 +37,41 @@ export default function Orders() {
                     Product name
                 </th>
                 <th scope="col" className="px-6 py-3">
-                    Color
-                </th>
-                <th scope="col" className="px-6 py-3">
-                    Category
-                </th>
-                <th scope="col" className="px-6 py-3">
                     Price
                 </th>
                 <th scope="col" className="px-6 py-3">
+                    payment Status
+                </th>
+                <th scope="col" className="px-6 py-3">
+                    Details
                 </th>
             </tr>
         </thead>
         <tbody>
-            <tr className="bg-white border-b   hover:bg-gray-50 ">
+            {orders && orders.map((item)=>{
+                return <tr key={item._id} className="bg-white border-b   hover:bg-gray-50 ">
                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap 
                 ">
-                    Apple MacBook Pro 17
+                   {/* {item.orderId} */}
+                   {Object.values(item.products).map((product,index) => (
+          index===Object.values(item.products).length-1?`${product.name} `:`${product.name} , `
+      ))}
+                    
                 </th>
-                <td className="px-6 py-4 text-gray-900">
-                    Silver
+                
+                <td className="px-4 py-4 text-gray-900">
+                    {item.amount}
                 </td>
-                <td className="px-6 py-4 text-gray-900">
-                    Laptop
+                <td className="px-4 py-4 text-gray-900">
+                    {item.status}
                 </td>
-                <td className="px-6 py-4 text-gray-900">
-                    $2999
+                <td className="px-4 py-4 text-gray-900">
+                   <Link href={`/order?orderId=${item.orderId}`}>Details</Link>
                 </td>
             </tr>
-            <tr className="bg-white border-b   hover:bg-gray-50 ">
-                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap 
-                ">
-                    Microsoft Surface Pro
-                </th>
-                <td className="px-6 py-4 text-gray-900">
-                    White
-                </td>
-                <td className="px-6 py-4 text-gray-900">
-                    Laptop PC
-                </td>
-                <td className="px-6 py-4 text-gray-900">
-                    $1999
-                </td>
-            </tr>
-            <tr className="bg-white  hover:bg-gray-50 ">
-                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap 
-                ">
-                    Magic Mouse 2
-                </th>
-                <td className="px-6 py-4 text-gray-900">
-                    Black
-                </td>
-                <td className="px-6 py-4 text-gray-900">
-                    Accessories
-                </td>
-                <td className="px-6 py-4 text-gray-900">
-                    $99
-                </td>
-            </tr>
+            })}
+            
+
         </tbody>
     </table>
 </div>
@@ -92,14 +83,3 @@ export default function Orders() {
 }
 
 
-
-export async function getServerSideProps(context) {
-    if (!mongoose.connections[0].readyState) {
-      await mongoose.connect(process.env.MONGO_URI)
-    }
-  
-    let orders = await Order.find({ }, { createdAt: 0, updatedAt: 0, __v: 0 });
-    return {
-      props: { orders: orders },
-    }
-  }
