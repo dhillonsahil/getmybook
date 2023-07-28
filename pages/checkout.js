@@ -110,6 +110,22 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
           }, body: JSON.stringify(data)
         })
 
+        let preResponse=await saveOrder.json()
+        if(preResponse.success!=true){
+          toast.error('Cart Tempered ! Please try again', {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
+        clearCart()
+        }else{
+
+       
         // Initialize Razorpay with the order ID received from the server
         const rzpOptions = {
           key: 'rzp_test_bPJZziSuHLY9L5',
@@ -156,6 +172,7 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
       })
         // Open the Razorpay payment modal
         rzp.open();
+      }
       } else {
         console.error('Failed to create order');
       }
