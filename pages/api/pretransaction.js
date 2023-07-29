@@ -10,14 +10,14 @@ const handler = async (req, res) => {
 
     // Check if the cart is tempered
     let product, sumTotal=0;
-    for (let item in req.body.cart) {
-        console.log("item price " ,req.body.cart[item].price)
-        sumTotal += (req.body.cart[item].price * req.body.cart[item].qty )
+    for (let item in req.body.data.cart) {
+        console.log("item price " ,req.body.data.cart[item].price)
+        sumTotal += (req.body.data.cart[item].price * req.body.data.cart[item].qty )
         product = await Product.findOne({ slug: item })
-        if(product.availableQty<req.body.cart[item].qty){
+        if(product.availableQty<req.body.data.cart[item].qty){
             res.status(200).json({success:"outOfStock"})
         }
-        if ((product.price*req.body.cart[item].qty) != (req.body.cart[item].price * req.body.cart[item].qty)) {
+        if ((product.price*req.body.data.cart[item].qty) != (req.body.data.cart[item].price * req.body.data.cart[item].qty)) {
             console.log("tempered")
             res.status(400).json({ success: false, "error": "true" })
             return
@@ -25,25 +25,33 @@ const handler = async (req, res) => {
     }
 
     console.log("Sum total",sumTotal)
-    console.log("Sub total",req.body.subTotal)
-    if (sumTotal != req.body.subTotal) {
+    console.log("Sub total",req.body.data.subTotal)
+    if (sumTotal != req.body.data.subTotal) {
         res.status(400).json({ success: false, "error": "true" })
         return;
     }
 
-    //check if the cart items are out of stock
-
-    // check if the details are valid
-
     //  then initiate the order
 
+    // let order = new Order({
+    //     email: req.body.data.email,
+    //     orderId: req.body.data.order_id,
+    //     address: req.body.data.address,
+    //     amount: req.body.data.subTotal,
+    //     products: req.body.data.cart,
+    //     address:req.body.addr,
+    // })
+
     let order = new Order({
-        email: req.body.email,
-        orderId: req.body.order_id,
-        address: req.body.address,
-        amount: req.body.subTotal,
-        products: req.body.cart
+        email: req.body.data.email,
+        orderId: req.body.data.order_id,
+        address: req.body.data.address,
+        amount: req.body.data.subTotal,
+        products: req.body.data.cart,
+        address:req.body.addr,
+        delivery: 'Pending' // set the delivery field here
     })
+    
 
     await order.save()
 

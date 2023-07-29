@@ -1,14 +1,17 @@
-import React ,{useEffect}from 'react'
+import React ,{useEffect, useState}from 'react'
 import { useRouter } from 'next/router'
 import Order from '@/models/Order'
 import mongoose
   from 'mongoose'
 export default function MyOrder({ order }) {
   const router = useRouter();
+  const [date,setdate]=useState()
   useEffect(() => {
     if (!order) {
       router.push('/');
     }
+    let d = new Date(order.createdAt)
+    setdate(d)
   }, [order]);
 
   if (!order) {
@@ -24,7 +27,8 @@ export default function MyOrder({ order }) {
           <div className="lg:w-4/5 mx-auto flex flex-wrap">
             <div className="lg:w-1/2 w-full lg:pr-10 lg:py-6 mb-6 lg:mb-0">
               <h1 className="text-gray-900 text-3xl title-font font-medium mb-4">Order Id : {oid}</h1>
-              <p className="leading-relaxed mb-4">{order.status=="PAID"?`Your Payment Status is paid. Your Order has been placed Successfully`:`Your Payment Status is ${order.status}`}</p>
+              <p className="leading-relaxed mb-4">{order.status=="PAID"?`Your Payment Status is Paid. Your Order has been placed Successfully`:`Your Payment Status is ${order.status}`}</p>
+              <p>Order placed on : {date && date.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
               <div className="flex text-center mb-4">
                 <a className="flex-grow py-2 text-lg px-1">Description</a>
                 <a className="flex-grow  py-2 text-lg px-1">Quantity</a>
@@ -41,7 +45,7 @@ export default function MyOrder({ order }) {
 
               <div className="flex">
                 <span className="mt-6 title-font font-medium text-2xl text-gray-900">₹{order.amount}</span>
-                <button className="mt-6 flex ml-auto text-white bg-pink-500 border-0 py-2 px-6 focus:outline-none hover:bg-pink-600 rounded">Track Order</button>
+                <button disabled={order.delivery=="Pending"} className={`mt-6 flex ml-auto  text-white bg-pink-500 border-0 disabled:bg-pink-400 py-2 px-6 focus:outline-none hover:bg-pink-600 rounded`}>{order.delivery=="Pending"?'Unshipped':'Track Order'}</button>
 
               </div>
             </div>
@@ -60,7 +64,7 @@ export async function getServerSideProps(context) {
     await mongoose.connect(process.env.MONGO_URI)
   }
 
-  let order = await Order.findOne({ orderId: context.query.orderId }, { createdAt: 0, updatedAt: 0, __v: 0 });
+  let order = await Order.findOne({ orderId: context.query.orderId });
   return {
     props: { order: JSON.parse(JSON.stringify(order)) },
   }

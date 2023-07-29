@@ -56,7 +56,7 @@ export default function App({ Component, pageProps }) {
 
 
     const LogOut= ()=>{
-        localStorage.removeItem('token')
+        localStorage.removeItem('myUser')
         setUser({value:null})
         setKey(Math.random())
         router.push('/')
@@ -102,9 +102,10 @@ export default function App({ Component, pageProps }) {
             console.log("error loading the cart" + error)
             localStorage.clear()
         }
-        const token = localStorage.getItem("token")
-        if(token){
-            setUser({value:token})
+        const myUser = JSON.parse(localStorage.getItem("myUser"))
+        if(myUser){
+            setUser({value:myUser.token,email:myUser.email})
+            console.log(user)
         }
         setKey(Math.random)
 

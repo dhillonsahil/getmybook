@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { AiFillMinusCircle, AiFillPlusCircle } from 'react-icons/ai';
 import { BsFillBagCheckFill } from 'react-icons/bs';
 import Head from 'next/head';
@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify'
 
-export default function Checkout({ cart,clearCart, addToCart, removeFromCart, subTotal }) {
+export default function Checkout({ user,cart,clearCart, addToCart, removeFromCart, subTotal }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -16,13 +16,14 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
   const [state, setState] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
-  const [disabled, setDisabled] = useState(true);
   // const [payObj, setPayObj] = useState({})
 
+  
   const router = useRouter()
   const handleChange = async(e) => {
     if (e.target.name === 'name') {
       setName(e.target.value);
+      {user.email?setEmail(user.email) :console.log('Nope')}
     } else if (e.target.name === 'email') {
       setEmail(e.target.value);
     } else if (e.target.name === 'address') {
@@ -60,25 +61,98 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
       setCity(e.target.value);
     }
 
-    // check pincode length
     
-    // enable pay
-    if (
-      name &&
-      email &&
-      phone.length === 10 &&
-      pincode.length === 6 &&
-      city &&
-      state &&
-      address
-    ) {
-      setDisabled(false);
-    } else {
-      setDisabled(true);
-    }
   };
 
   const handlePayment = async () => {
+    if(subTotal==0){
+      toast.error('Cart Empty !', {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+    });
+      return
+    }
+    if (!phone || !/^[0-9]{10}$/.test(phone) || Number.isInteger(phone)) {
+      toast.error("Please enter a valid 10-digit phone number.", {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+    });
+      return;
+    }
+  
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email address", {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+    });
+      return;
+    }
+  
+    if (!pincode || pincode.length !== 6 || Number.isInteger(pincode)) {
+      toast.error("Please enter a valid 6-digit pincode.", {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+    });
+      return;
+    }
+
+    let pins = await fetch(`https://api.postalpincode.in/pincode/${pincode}`)
+    let pincodeRes =await pins.json() 
+    if(pincodeRes[0].Status=="Success"){
+      setState(pincodeRes[0].PostOffice[0].State)
+      setCity(pincodeRes[0].PostOffice[0].District)
+    }else{
+      toast.error('Incorrect Pincode  Or Pincode not Serviceable !', {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+    });
+    return
+    }
+    
+    if(address.length==0 || state.length==0 || city.length==0 ||name.length==0){
+      alert();
+      toast.error("Insert Data in Empty fields", {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+    });
+      return
+    }
     try {
       // const as = await loadScript()
       const response = await fetch('/api/createOrder', {
@@ -100,14 +174,26 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
       if (response.ok) {
         const orderData = await response.json();
         const { order_id } = orderData;
-        const data = { email, order_id, address, subTotal, cart }
+        const data = { email, order_id, address, subTotal, cart, name,phone,pincode,state,city }
 
         // save order in db
         let saveOrder = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/pretransaction`, {
           method: "POST",
           headers: {
             'Content-type': "application/json"
-          }, body: JSON.stringify(data)
+          // }, body: JSON.stringify(data)
+          }, body: JSON.stringify({
+            data,
+            addr:JSON.stringify({
+              name:name,
+              phone:phone,
+              address:address,
+              pincode:pincode,
+              state:state,
+              city:city,
+              email:email,
+            })
+          })
         })
 
         let preResponse=await saveOrder.json()
@@ -223,7 +309,7 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
 
   }
   return (
-    <div className='container px-6 sm:m-auto'>
+    <div className='container px-6 sm:m-auto'> 
        <ToastContainer
             position="top-center"
             autoClose={3000}
@@ -253,10 +339,14 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
           </div>
         </div>
         <div className="px-2 w-1/2">
-          <div className={"mb-2"}>
+          {user.email? <div className={"mb-2"}> 
+            <label htmlFor="email" className="leading-7 text-sm text-gray-600">Email</label>
+            <input onChange={handleChange} value={user.email} type="email" id="email" name="email" className="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
+          </div>:<div className={"mb-2"}>
             <label htmlFor="email" className="leading-7 text-sm text-gray-600">Email</label>
             <input onChange={handleChange} value={email} type="email" id="email" name="email" className="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
           </div>
+          }
         </div>
 
       </div>
@@ -320,7 +410,6 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
         <span className='total font-bold'>SubTotal :₹{subTotal}</span>
         <div className='mx-4'>
           <button
-            disabled={disabled}
             id='razorpay-payment-button'
             onClick={handlePayment}
             className='flex items-center mr-2 disabled:bg-pink-200 text-white bg-pink-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded text-lg'

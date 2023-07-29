@@ -18,8 +18,13 @@ const OrderSchema = new Schema({
         type:String,
         default : 'Pending',
         required:true
+    },
+    delivery :{
+        type:String,
+        default : 'unshipped',
+        required:true
     }
-},{timestamps:true})
+},{timestamps:true,strict:false})
 
 
 // mongoose.models={}

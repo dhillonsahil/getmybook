@@ -76,7 +76,7 @@ export default function Signup() {
 
   }
   useEffect(() => {
-    if(localStorage.getItem("token")){
+    if(localStorage.getItem("myUser")){
         router.push('/')
     }
 },[])

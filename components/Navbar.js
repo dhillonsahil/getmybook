@@ -1,5 +1,5 @@
 // "use client"
-import React, { useState ,useRef}  from 'react'
+import React, { useState ,useRef,useEffect}  from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FaShoppingCart } from 'react-icons/fa';
@@ -8,21 +8,27 @@ import {  AiFillMinusCircle, AiFillPlusCircle} from 'react-icons/ai'
 import {BsFillBagCheckFill} from 'react-icons/bs'
 import {MdAccountCircle} from "react-icons/md"
 import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from 'next/router';
 
 
 export default function Navbar({LogOut,user,addToCart,cart,removeFromCart  ,clearCart ,subTotal}) {
 
   const [dropdown, setDropdown] = useState(false)
-  const toggleCart = () => {
-    if (ref.current.classList.contains('translate-x-full')) {
-      ref.current.classList.remove('translate-x-full')
-      ref.current.classList.add('translate-x-0')
-    }
-    else if (!ref.current.classList.contains('translate-x-full')) {
-      ref.current.classList.remove('translate-x-0')
-      ref.current.classList.add('translate-x-full')
+  const [sidebar, setSidebar] = useState(false)
+  const router = useRouter()
 
+  useEffect(() => {
+    Object.keys(cart).length!==0 && setSidebar(true)
+    // if(router.pathname=='/checkout' || router.pathname=='/myaccount' ||  router.pathname=='/' ||  router.pathname=='/product' ||  router.pathname=='/login' ||  router.pathname=='/signup' ||  router.pathname=='/fiction' ||  router.pathname=='/books' ||  router.pathname=='/selfhelp' ||   router.pathname=='/novels' ){
+    if(router.pathname!='/temppage'){
+      setSidebar(false)
     }
+  }, [])
+  
+
+
+  const toggleCart = () => {
+    setSidebar(!sidebar)
   }
   const ref = useRef()
   // dropdown menu func
@@ -32,7 +38,7 @@ export default function Navbar({LogOut,user,addToCart,cart,removeFromCart  ,clea
 
   // return jsx
   return (
-    <div className='flex sticky top-0 z-10 bg-white flex-col md:flex-row md:justify-start justify-center items-center mb-1 py-2 shadow-md'>
+    <div className={`flex sticky top-0 z-10 bg-white flex-col md:flex-row md:justify-start justify-center items-center mb-1 py-2 shadow-md `}>
       <div className="logo mr-auto md:mx-5">
         <Link href={'/'}>
           <Image src={'/logo_long.png'} height={50} width={200} alt='logo'></Image></Link>
@@ -47,9 +53,9 @@ export default function Navbar({LogOut,user,addToCart,cart,removeFromCart  ,clea
         </ul>
       </div>
       <div  className="cart absolute item-center right-0 top-4 mx-5 cursor-pointer flex">
-      {user.value &&<MdAccountCircle  onMouseOver={()=>setDropdown(true)} onMouseLeave={()=>setDropdown(false)} className='text-xl md:text-2xl mx-1' />}
+      {user.value &&<MdAccountCircle  onMouseOver={()=>setDropdown(true)} onMouseLeave={()=>setDropdown(false)} className='text-xl md:text-2xl mx-2' />}
       {/* Dropdown content */}
-      <div  onMouseOver={()=>setDropdown(true)} onMouseLeave={()=>setDropdown(false)}>
+      <div  onMouseOver={()=>setDropdown(true)} onClick={()=>setDropdown(!dropdown)} onMouseLeave={()=>setDropdown(false)}>
       {dropdown && (
           <div  className="absolute bg-white right-8 top-6 rounded-lg px-5 w-44">
             <ul className="py-2 text-sm text-gray-700">
@@ -67,7 +73,7 @@ export default function Navbar({LogOut,user,addToCart,cart,removeFromCart  ,clea
         <FaShoppingCart className='text-xl md:text-2xl mx-1' onClick={toggleCart}/>
       </div>
       {/*  Cart  */}
-      <div ref={ref} className={`w-90 sidecart h-[100vh]  overflow-y-scroll fixed top-0 right-0 bg-pink-100 py-10 px-8 transform transition-transform ${Object.keys(cart).length!==0?"translate-x-0":"translate-x-full"} z-50`}>
+      <div ref={ref} className={`w-90 sidecart h-[100vh]  overflow-y-scroll fixed top-0  bg-pink-100 py-10 px-8 transform transition-alll ${sidebar?"right-0":"-right-96"} z-50`}>
         <h2 className='font-bold text-xl text-center'>Shopping Cart</h2>
         <span onClick={toggleCart} className="absolute top-5 right-2"> <IoIosCloseCircle className='text-xl md:text-2xl cursor-pointer' /></span>
         <ol className='list-decimal font-semibold'>
@@ -87,9 +93,9 @@ export default function Navbar({LogOut,user,addToCart,cart,removeFromCart  ,clea
         </ol>  
         <div className="total font-bold my-5">SubTotal :₹{subTotal}</div>
         <div className="flex">
-        <Link href={'/checkout'}><button className="flex items-center mr-2  text-white bg-pink-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded text-lg">< BsFillBagCheckFill className='m-1'/> CheckOut</button></Link>
-        <button onClick={clearCart} className="flex  mr-2 text-white bg-pink-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded text-lg"> Clear Cart</button>
+        <Link href={'/checkout'}><button disabled={subTotal==0} className="flex disabled:bg-pink-200 items-center mr-2  text-white bg-pink-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded text-lg">< BsFillBagCheckFill className='m-1'/> CheckOut</button></Link>
 
+        <button onClick={clearCart} disabled={subTotal==0} className="flex  mr-2 disabled:bg-pink-200 text-white bg-pink-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded text-lg"> Clear Cart</button>
         </div>
       </div>
       

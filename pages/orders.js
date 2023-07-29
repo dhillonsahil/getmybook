@@ -8,15 +8,16 @@ export default function Orders() {
     const router = useRouter()
 
     useEffect( ()=>{
-        if(!localStorage.getItem("token")){
+        if(!localStorage.getItem("myUser")){
             router.push('/login')
         }
+        console.log(localStorage.getItem('myUser').token)
         const fetchOrders = async ()=>{
             let a = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/myorders`,{
                 method:"POST",
                 headers:{
                     'Content-type':'application/json'
-                },body:JSON.stringify({token:localStorage.getItem('token')})
+                },body:JSON.stringify({token:JSON.parse(localStorage.getItem('myUser')).token})
             })
            
             let res = await a.json()
@@ -30,7 +31,7 @@ export default function Orders() {
       <h1 className="font-bold  text-center text-xl my-4">My Orders</h1>
       
 <div className="relative overflow-x-auto shadow-md sm:rounded-lg table-auto">
-    <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+   {orders.length!=0?<table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-700 text-white">
             <tr>
                 <th scope="col" className="px-6 py-3">
@@ -73,7 +74,7 @@ export default function Orders() {
             
 
         </tbody>
-    </table>
+    </table> : <h1 className='text-center my-10 py-10 text-black font-bold'>No Orders Found</h1>}
 </div>
 
 

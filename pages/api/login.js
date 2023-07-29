@@ -18,7 +18,7 @@ const handler = async (req, res) => {
           var token = jwt.sign({email:user.email,name:user.name},process.env.JWT_SECRET,{
             expiresIn:"2d"
           })
-          return res.status(200).json({ success:true,token });
+          return res.status(200).json({ success:true,token,email :user.email });
         } else {
           return res.status(200).json({ success: "Check Your Credentials" });
         }

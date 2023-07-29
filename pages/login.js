@@ -30,7 +30,7 @@ export default function Login() {
         let response = await res.json()
         console.log(response)
         if(response.success==true){
-            localStorage.setItem("token",response.token)
+            localStorage.setItem("myUser",JSON.stringify({token : response.token , email:response.email}))
             toast.success('Logged In!', {
                 position: "top-left",
                 autoClose: 3000,
