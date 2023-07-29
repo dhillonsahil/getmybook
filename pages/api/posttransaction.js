@@ -1,6 +1,6 @@
 import Order from "@/models/Order"
 import connectDb from "@/middleware/mongoose"
-
+import Product from "@/models/Product";
 const handler = async (req, res) => {
   const { paymentInfo} = req.body;
   console.log(req.body.paymentInfo , " order id :- ",paymentInfo.razorpay_order_id)
@@ -8,6 +8,10 @@ const handler = async (req, res) => {
   // let order= await Order.findOneAndUpdate{{orderId:req.body.razorpay_order_id}}
   let order = await Order.findOneAndUpdate({ orderId: paymentInfo.razorpay_order_id }, { status: "PAID", paymentInfo: req.body.razorpay_payment_id })
   await order.save()
+
+  for(let item in req.body.cart){
+    let product=await Product.findOneAndUpdate({slug:item},{$inc : {availableQty : -req.body.cart[item].qty}})
+  }
   // initiate shipping
   // reditect to order confirmation page
   res.status(200).json({ success:true})

@@ -1,10 +1,21 @@
-import React from 'react'
+import React ,{useEffect}from 'react'
 import { useRouter } from 'next/router'
 import Order from '@/models/Order'
 import mongoose
   from 'mongoose'
 export default function MyOrder({ order }) {
-  console.log(order)
+  const router = useRouter();
+  useEffect(() => {
+    if (!order) {
+      router.push('/');
+    }
+  }, [order]);
+
+  if (!order) {
+    // You can also return a loading state or a message here while waiting for the data to load.
+    return <div>Loading...</div>;
+  }
+
   const oid = order.orderId.split('_')[1];
   return (
     <div>

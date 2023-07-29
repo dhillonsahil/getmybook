@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Product from "@/models/Product";
 import { useRouter } from 'next/router'
 import mongoose from "mongoose";
@@ -11,11 +11,12 @@ export default function Slug({ addToCart, buyNow, product }) {
   const [service, setservice] = useState()
   const router = useRouter()
   const { slug } = router.query
+  const [stock,setStock]=useState(false)
   const checkServiceability = async () => {
 
-    let pins = await fetch("http://localhost:3000/api/pincode")
+    let pins = await fetch(`https://api.postalpincode.in/pincode/${pin}`)
     let pinJson = await pins.json()
-    if (Object.keys(pinJson).includes(pin)) { 
+    if (pinJson[0].Status=="Success") { 
       setservice(true);
       toast.success('Your Pincode is Serviceable!', {
         position: "bottom-center",
@@ -42,6 +43,13 @@ export default function Slug({ addToCart, buyNow, product }) {
     }
   }
 
+
+  useEffect(()=>{
+    if(product.availableQty==0){
+      setStock(true)
+    }
+    console.log(stock)
+  },[router.query])
 
   const onchange = (e) => {
     setpin(e.target.value)
@@ -104,16 +112,13 @@ export default function Slug({ addToCart, buyNow, product }) {
               </span>
             </div>
             <p className="leading-relaxed">{product.description}</p>
+            <p className="leading-relaxed my-2 text-red-600">Avilablle Quantity : {product.availableQty}</p>
 
             <div className="flex flex-col md:flex-row  m-2">
               <span className="title-font font-medium text-2xl text-gray-900">₹{product.price}.00</span>
-              <button onClick={() => addToCart(slug, 1, product.price, product.title)} className="flex my-2 justify-center w-60 md:my-0 mx-2 text-white bg-pink-500 border-0 py-2 px-6 focus:outline-none hover:bg-pink-600 rounded">Add to Cart</button>
-              <button onClick={() => buyNow(slug, 1, product.price, product.title)} className="flex ml-2 my-2 md:my-0 w-60 justify-center text-white bg-pink-500 border-0 py-2 px-6 focus:outline-none hover:bg-pink-600 rounded">Buy Now</button>
-              <button className="rounded-full w-10 h-10 bg-gray-200 p-0 border-0 inline-flex items-center justify-center text-gray-500 ml-4">
-                <svg fill="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-5 h-5" viewBox="0 0 24 24">
-                  <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
-                </svg>
-              </button>
+              <button disabled={stock}  onClick={() => addToCart(slug, 1, product.price, product.title)} className="flex my-2 disabled:bg-pink-200 justify-center w-60 md:my-0 mx-2 text-white bg-pink-500 border-0 py-2 px-6 focus:outline-none hover:bg-pink-600 rounded">Add to Cart</button>
+              <button disabled={stock} onClick={() => buyNow(slug, 1, product.price, product.title)} className="flex disabled:bg-pink-200 ml-2 my-2 md:my-0 w-60 justify-center text-white bg-pink-500 border-0 py-2 px-6 focus:outline-none hover:bg-pink-600 rounded">Buy Now</button>
+              
             </div>
             <div className="pin mt-6 flex space-x-2 text-sm">
               <input onChange={onchange} className="rounded border appearance-none border-gray-400" placeholder="  Check your pincode" type="text" />

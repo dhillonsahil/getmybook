@@ -14,6 +14,9 @@ const handler = async (req, res) => {
         console.log("item price " ,req.body.cart[item].price)
         sumTotal += (req.body.cart[item].price * req.body.cart[item].qty )
         product = await Product.findOne({ slug: item })
+        if(product.availableQty<req.body.cart[item].qty){
+            res.status(200).json({success:"outOfStock"})
+        }
         if ((product.price*req.body.cart[item].qty) != (req.body.cart[item].price * req.body.cart[item].qty)) {
             console.log("tempered")
             res.status(400).json({ success: false, "error": "true" })

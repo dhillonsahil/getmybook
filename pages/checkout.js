@@ -111,8 +111,20 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
         })
 
         let preResponse=await saveOrder.json()
-        if(preResponse.success!=true){
+        if(preResponse.success==false){
           toast.error('Cart Tempered ! Please try again', {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
+        clearCart()
+        }else if(preResponse.success=="outOfStock"){
+          toast.error('Items Out OF Stock or Less Quantity Available', {
             position: "top-center",
             autoClose: 3000,
             hideProgressBar: false,
@@ -199,7 +211,8 @@ export default function Checkout({ cart,clearCart, addToCart, removeFromCart, su
           'Content-type':'application/json'
         },body:JSON.stringify({
           paymentInfo:payObj,
-          razorpay_payment_id:payObj.razorpay_payment_id
+          razorpay_payment_id:payObj.razorpay_payment_id,
+          cart:cart
         })
       })
 

@@ -139,7 +139,7 @@ export default function App({ Component, pageProps }) {
             theme="dark"
         />
         {key && <Navbar LogOut={LogOut} user={user} key={key} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal} />}
-        <Component buyNow={buyNow} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal}   {...pageProps} />
+        <Component user={user} buyNow={buyNow} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal}   {...pageProps} />
         <Footer />
     </>
 }
