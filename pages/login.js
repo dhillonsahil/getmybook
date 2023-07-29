@@ -18,7 +18,8 @@ export default function Login() {
 
     const handleSubmit = async(e) => {
         e.preventDefault()
-        const data = { email, password }
+        const normalEm=email.toLowerCase()
+        const data = { normalEm, password }
         let res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/login`, {
           method: "POST",
           headers: {

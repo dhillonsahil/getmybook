@@ -23,7 +23,8 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const data = { name, email, password }
+    const normalEm = email.toLowerCase()
+    const data = { name, normalEm, password }
     let res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/signup`, {
       method: "POST",
       headers: {

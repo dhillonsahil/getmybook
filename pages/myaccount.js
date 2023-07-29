@@ -122,7 +122,7 @@ export default function MyAccount() {
         <div className="flex items-center justify-center my-5">
         <button
             id='razorpay-payment-button'
-            className=' flex items-center justify-center py-3 rounded-3xl mr-2 w-1/2 text-center disabled:bg-pink-200 text-white bg-pink-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded text-lg'
+            className=' flex items-center justify-center py-3 rounded-3xl mr-2 w-1/2 text-center disabled:bg-pink-200 text-white bg-pink-500 border-0  px-2 focus:outline-none hover:bg-indigo-600  text-lg'
           >
            Submit
           </button>
