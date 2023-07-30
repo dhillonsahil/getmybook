@@ -13,7 +13,7 @@ const handler = async (req, res) => {
         return res.status(200).json({ success: "Account Already Exist" });
       }
 
-      const newUser = new User({name,normalEm,password:CryptoJS.AES.encrypt(req.body.password, process.env.SECRET_KEY).toString()});
+      const newUser = new User({name,email:normalEm,password:CryptoJS.AES.encrypt(req.body.password, process.env.SECRET_KEY).toString()});
       await newUser.save();
       return res.status(200).json({ success: true });
     } catch (error) {

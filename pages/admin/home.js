@@ -18,8 +18,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
+     document.addEventListener('mousedown', handleClickOutside);
+         return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);

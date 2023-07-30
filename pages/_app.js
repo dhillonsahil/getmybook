@@ -107,7 +107,6 @@ export default function App({ Component, pageProps }) {
         const myUser = JSON.parse(localStorage.getItem("myUser"))
         if(myUser){
             setUser({value:myUser.token,email:myUser.email})
-            console.log(user)
         }
         setKey(Math.random)
 
@@ -143,7 +142,7 @@ export default function App({ Component, pageProps }) {
         />
         {key && !hideNavbar && <Navbar LogOut={LogOut} user={user} key={key} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal} />}
         
-        <Component user={user} buyNow={buyNow} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal}   {...pageProps} />
+        <Component  user={user} buyNow={buyNow} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal}   {...pageProps} />
         {!hideNavbar &&<Footer />}
     </>
 }
