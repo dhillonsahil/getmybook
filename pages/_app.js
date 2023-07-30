@@ -8,11 +8,13 @@ import { ToastContainer, toast } from 'react-toastify'
 import LoadingBar from 'react-top-loading-bar'
 import 'react-toastify/dist/ReactToastify.css';
 
-
 export default function App({ Component, pageProps }) {
+    const hideNav=['/admin/home','/admin/addproduct','/admin/login','/admin/orders','/admin/viewproducts']
     const [cart, setCart] = useState({})
     const [subTotal, setSubTotal] = useState(0)
     const router = useRouter()
+
+    const hideNavbar = hideNav.includes(router.pathname);
 
     // Add to Cart Function
     const addToCart = (itemcode, qty, price, name) => {
@@ -139,8 +141,9 @@ export default function App({ Component, pageProps }) {
             pauseOnHover
             theme="dark"
         />
-        {key && <Navbar LogOut={LogOut} user={user} key={key} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal} />}
+        {key && !hideNavbar && <Navbar LogOut={LogOut} user={user} key={key} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal} />}
+        
         <Component user={user} buyNow={buyNow} addToCart={addToCart} cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} subTotal={subTotal}   {...pageProps} />
-        <Footer />
+        {!hideNavbar &&<Footer />}
     </>
 }

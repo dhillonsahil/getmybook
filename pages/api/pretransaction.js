@@ -49,7 +49,7 @@ const handler = async (req, res) => {
         amount: req.body.data.subTotal,
         products: req.body.data.cart,
         address:req.body.addr,
-        delivery: 'Pending' // set the delivery field here
+        delivery: 'unshipped' // set the delivery field here
     })
     
 

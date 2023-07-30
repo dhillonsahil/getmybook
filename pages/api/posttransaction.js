@@ -6,7 +6,7 @@ const handler = async (req, res) => {
   console.log(req.body.paymentInfo , " order id :- ",paymentInfo.razorpay_order_id)
   // update  into orders table after checking update status
   // let order= await Order.findOneAndUpdate{{orderId:req.body.razorpay_order_id}}
-  let order = await Order.findOneAndUpdate({ orderId: paymentInfo.razorpay_order_id }, { status: "PAID", paymentInfo: req.body.razorpay_payment_id ,delivery:"Pending"} )
+  let order = await Order.findOneAndUpdate({ orderId: paymentInfo.razorpay_order_id }, { status: "PAID", paymentInfo: req.body.razorpay_payment_id } )
   await order.save()
 
   for(let item in req.body.cart){
