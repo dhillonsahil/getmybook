@@ -37,6 +37,9 @@ export default function Viewproducts({ order }) {
     };
 
     useEffect(() => {
+        if(!localStorage.getItem("checkItout")){
+            router.push('/admin/login')
+        }
         document.addEventListener('mousedown', handleClickOutside);
         setOrders(order);
         // Initialize itemStates with the default values from the order data

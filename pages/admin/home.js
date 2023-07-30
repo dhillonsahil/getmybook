@@ -18,6 +18,9 @@ export default function Home() {
   };
 
   useEffect(() => {
+   if(!localStorage.getItem("checkItout")){
+      router.push('/admin/login')
+  }
      document.addEventListener('mousedown', handleClickOutside);
          return () => {
       document.removeEventListener('mousedown', handleClickOutside);
