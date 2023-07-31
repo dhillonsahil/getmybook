@@ -42,7 +42,7 @@ export default function Login() {
                 progress: undefined,
                 theme: "light",
             });
-            router.push("/admin/home")
+            router.push("/admin/orders")
         }else if(response.success=="Check Your Credentials"){
             toast.error('Check Your Credentials !', {
                 position: "top-left",
@@ -73,7 +73,7 @@ export default function Login() {
 
     useEffect(() => {
         if(localStorage.getItem("checkItout")){
-            router.push('/admin/home')
+            router.push('/admin/orders')
         }
     },[])
     
