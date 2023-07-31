@@ -9,7 +9,7 @@ import LoadingBar from 'react-top-loading-bar'
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function App({ Component, pageProps }) {
-    const hideNav=['/admin/home','/admin/addproduct','/admin/login','/admin/orders','/admin/viewproducts']
+    const hideNav=['/admin/home','/admin/addproduct','/admin/login','/admin/orders','/admin/viewproducts','/admin/test']
     const [cart, setCart] = useState({})
     const [subTotal, setSubTotal] = useState(0)
     const router = useRouter()
